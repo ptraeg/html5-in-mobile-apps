@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>iOS WebView Test</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #eee;
+        }
+
+        button {
+            height: 40px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+<h2>Webview Content</h2>
+
+<form>
+    <label>First Name:</label>
+    <input type="text" id="fname">
+    <br/>
+    <label>Last Name:</label>
+    <input type="text" id="lname">
+    <br/>
+    <button id='updateNativeBtn'>Update Native</button>
+</form>
+</body>
+<script>
+    (function () {
+        var nativeBridge = {
+            invoke: function (commandName, args) {
+                console.log(commandName + ": " + JSON.stringify(args, null, 2));
+		        window.location = 'js-call:' + commandName + ':' + encodeURIComponent(JSON.stringify(args));
+            }
+        };
+        var updateNativeBtn = document.getElementById('updateNativeBtn');
+        var fNameTextField = document.getElementById('fname');
+        var lNameTextField = document.getElementById('lname');
+        var clickevent = window.ontouchend ? 'touchend' : 'click';
+        updateNativeBtn.addEventListener(clickevent, function (evt) {
+            evt.preventDefault();
+            var nameData = {
+                fname: fNameTextField.value,
+                lname: lNameTextField.value
+            };
+            if (window.Android) {
+                Android.updateNames(JSON.stringify(nameData));
+            } else {
+	            nativeBridge.invoke('updateNames', nameData);
+            }
+        });
+        window.setNames = function(names) {
+            fNameTextField.value = names.fname;
+            lNameTextField.value = names.lname;
+        }
+    })();
+</script>
+</html>
